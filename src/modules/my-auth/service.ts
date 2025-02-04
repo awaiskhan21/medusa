@@ -71,42 +71,6 @@ class MyAuthProviderService extends AbstractAuthModuleProvider {
       return { success: false, error: error.message };
     }
   }
-  //   async register(
-  //     data: AuthenticationInput,
-
-  //     authIdentityProviderService: AuthIdentityProviderService
-  //   ): Promise<AuthenticationResponse> {
-  //     if (!data.body) {
-  //       return {
-  //         success: false,
-  //         error: "Invalid request body please provide phone number",
-  //       };
-  //     }
-  //     try {
-  //       await authIdentityProviderService.retrieve({
-  //         entity_id: data.body.phone,
-  //       });
-
-  //       return {
-  //         success: false,
-  //         error: "Identity with phone is already exists your otp is 1234",
-  //       };
-  //     } catch (error) {
-  //       if (error.type === MedusaError.Types.NOT_FOUND) {
-  //         const otp = "1234";
-  //         const createdAuthIdentity = await authIdentityProviderService.create({
-  //           entity_id: data.body.phone, // email or some ID
-  //           //   provider: this.identifier,
-  //         });
-
-  //         return {
-  //           success: true,
-  //         };
-  //       }
-
-  //       return { success: false, error: error.message };
-  //     }
-  //   }
 }
 
 export default MyAuthProviderService;
