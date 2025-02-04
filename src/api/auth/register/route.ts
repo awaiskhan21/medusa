@@ -1,6 +1,6 @@
 import { container } from "@medusajs/framework";
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import { Modules } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { createCustomersWorkflow } from "@medusajs/medusa/core-flows";
 import { ICustomerModuleService } from "@medusajs/framework/types";
 
@@ -9,8 +9,8 @@ type Input = {
 };
 
 export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
-  const number = req.body.phone;
-  if (!number) {
+  const phone = req.body.phone;
+  if (!phone) {
     return res.status(400).json({
       message: "Phone number is required",
     });
@@ -18,10 +18,20 @@ export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
   const customerModuleService: ICustomerModuleService = req.scope.resolve(
     Modules.CUSTOMER
   );
-  const [customer, count] = await customerModuleService.listAndCountCustomers({
-    q: `${number}`,
+  // const [customer, count] = await customerModuleService.listAndCountCustomers({
+  //   q: `${phone}`,
+  // });
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+
+  const { data: customer } = await query.graph({
+    entity: "customer",
+    fields: ["*"],
+    filters: {
+      phone: phone as any,
+    },
   });
-  if (count > 0) {
+  if (customer.length > 0) {
+    console.log("customer", customer);
     return res.status(400).json({
       message: "Phone number already exists",
       customer: customer,
@@ -33,7 +43,9 @@ export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
       input: {
         customersData: [
           {
-            phone: req.body.phone,
+            phone: phone,
+            // email: `${phone}@gmail.com`,
+            // password: phone,
           },
         ],
         additional_data: {
@@ -42,7 +54,7 @@ export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
       },
     });
     res.json({
-      message: `[POST] Hello ${req.body.phone}!`,
+      message: `Welcome ${req.body.phone}!`,
       otp: otp,
       result: result,
     });

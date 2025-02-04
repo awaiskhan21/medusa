@@ -1,4 +1,9 @@
-import { defineConfig, loadEnv } from "@medusajs/framework/utils";
+import {
+  ContainerRegistrationKeys,
+  defineConfig,
+  loadEnv,
+  Modules,
+} from "@medusajs/framework/utils";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
@@ -22,6 +27,27 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/manager",
+    },
+    {
+      resolve: "@medusajs/medusa/auth",
+      options: {
+        providers: [
+          // default provider
+          {
+            resolve: "@medusajs/medusa/auth-emailpass",
+            dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
+            id: "emailpass",
+          },
+          {
+            resolve: "./src/modules/my-auth",
+            id: "my-auth",
+            // dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
+            // options: {
+            //   // provider options...
+            // },
+          },
+        ],
+      },
     },
   ],
 });
