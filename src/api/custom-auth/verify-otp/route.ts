@@ -57,13 +57,27 @@ export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
     //   phone: customer.phone,
     // });
     const authService: IAuthModuleService = req.scope.resolve(Modules.AUTH);
-    const authToken = await authService.authenticate("auth-mobile-otp", {
+    //in emailpass it is asking for email and password
+    const authResult = await authService.authenticate("my-auth", {
       url: req.url,
       headers: req.headers,
       query: req.query,
       body: req.body,
       protocol: req.protocol,
     } as AuthenticationInput);
+
+    if (!authResult.success) {
+      return res.status(400).json({ message: authResult.error });
+    }
+    console.log("authResult", authResult);
+    if (!authResult.authIdentity) {
+      return res
+        .status(400)
+        .json({ message: "Authentication identity not found" });
+    }
+    const authToken = await authService.retrieveAuthIdentity(
+      `${authResult.authIdentity.id}`
+    );
     console.log("authToken", authToken);
     res.json({
       token: authToken,

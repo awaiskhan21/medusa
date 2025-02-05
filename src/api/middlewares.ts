@@ -2,6 +2,7 @@ import {
   defineMiddlewares,
   validateAndTransformBody,
   validateAndTransformQuery,
+  authenticate,
 } from "@medusajs/framework/http";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { z } from "zod";
@@ -32,6 +33,11 @@ export default defineMiddlewares({
           isList: true,
         }),
       ],
+    },
+    {
+      matcher: "/custom",
+      method: "GET",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
     },
   ],
 });
