@@ -8,6 +8,7 @@ import {
   ICustomerModuleService,
 } from "@medusajs/framework/types";
 import { AnyNaptrRecord } from "node:dns";
+import jwt from "jsonwebtoken";
 
 type Input = {
   otp: string;
@@ -58,29 +59,38 @@ export const POST = async (req: MedusaRequest<Input>, res: MedusaResponse) => {
     // });
     const authService: IAuthModuleService = req.scope.resolve(Modules.AUTH);
     //in emailpass it is asking for email and password
-    const authResult = await authService.authenticate("my-auth", {
-      url: req.url,
-      headers: req.headers,
-      query: req.query,
-      body: req.body,
-      protocol: req.protocol,
-    } as AuthenticationInput);
+    const { success, authIdentity, location, error } =
+      await authService.authenticate("my-auth", {
+        url: req.url,
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+        protocol: req.protocol,
+      } as AuthenticationInput);
 
-    if (!authResult.success) {
-      return res.status(400).json({ message: authResult.error });
+    if (!success) {
+      return res.status(400).json({ message: error });
     }
-    console.log("authResult", authResult);
-    if (!authResult.authIdentity) {
-      return res
-        .status(400)
-        .json({ message: "Authentication identity not found" });
-    }
-    const authToken = await authService.retrieveAuthIdentity(
-      `${authResult.authIdentity.id}`
-    );
-    console.log("authToken", authToken);
+    console.log("authIdentity", authIdentity);
+    const payloadAuthIdentity = {
+      actor_id: customer[0].id,
+      actor_type: "customer",
+      auth_identity_id: authIdentity?.id,
+      app_metadata: {
+        customer_id: customer[0].id,
+      },
+      // iat: currentTimestamp,
+      // exp: validityDuration,
+    };
+    const { jwtSecret } = container.resolve("configModule").projectConfig.http;
+    const token = jwt.sign(payloadAuthIdentity, jwtSecret);
+    const getCustomerReponse = {
+      token,
+      newUser: false,
+    };
     res.json({
-      token: authToken,
+      message: "OTP verified successfully",
+      data: getCustomerReponse,
     });
   } catch (e) {
     return res.status(500).json({
