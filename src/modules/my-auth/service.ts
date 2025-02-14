@@ -22,12 +22,6 @@ class MyAuthProviderService extends AbstractAuthModuleProvider {
         error: "Invalid request body please provide phone number",
       };
     }
-    if (data.body.otp !== "1234") {
-      return {
-        success: false,
-        error: "Invalid OTP",
-      };
-    }
     const authIdentity = await authIdentityProviderService.retrieve({
       entity_id: data.body.phone,
       // provider: this.provider,

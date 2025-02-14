@@ -29,6 +29,12 @@ module.exports = defineConfig({
       resolve: "./src/modules/manager",
     },
     {
+      resolve: "./src/modules/verified",
+    },
+    {
+      resolve: "./src/modules/mobile-otp",
+    },
+    {
       resolve: "@medusajs/medusa/auth",
       options: {
         providers: [
